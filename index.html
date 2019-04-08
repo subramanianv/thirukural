@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+
+      .pill {
+        border: none;
+        padding: 12px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        width:100px;
+
+        border-radius: 16px;
+      }
+      .green {
+        background-color: #4CAF50!important;
+      }
+      .gray {
+        background-color:#DFDCF3;
+      }
+
+      .text-line {
+        background-color: red;
+        height:10px;
+      }
+
+
+      .group3 {
+
+      }
+      .verticalAlign {
+        vertical-align: bottom;
+      }
+
+    </style>
+  </head>
+  <body>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+    <script type="text/javascript">
+    </script>
+    <h1>Thirukural</h1>
+    <div>
+
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <br/>
+
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <div type="text" class="pill text-line">&nbsp;</div>
+        <div type="text" class="pill text-line">&nbsp;</div>
+
+        <br/>
+        <br/>
+
+        <div class="word pill gray">Agara</div>
+        <div class="word pill gray">Agara</div>
+        <div class="word pill gray">Agara</div>
+        <div class="word pill gray">Agara</div>
+        <br/>
+
+        <div class="word pill gray">Agara</div>
+        <div class="word pill gray">Agara</div>
+        <div class="word pill gray">Agara</div>
+
+    </div>
+    <script type="text/javascript">
+      function getXY(obj) {
+        var curleft = curtop = 0;
+        if (obj.offsetParent) {
+            do {
+			           curleft += obj.offsetLeft;
+			            curtop += obj.offsetTop;
+
+              } while(obj = obj.offsetParent)
+        }
+        return {left:curleft,top:curtop};
+      }
+      function isOverlap(objOne,objTwo){
+        var rect1 = objOne[0].getBoundingClientRect();
+        var rect2 = objTwo[0].getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom)
+        return overlap;
+      }
+      var currentTarget = 0;
+      function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = array[i];
+          array[i] = array[j];
+          array[j] = temp;
+        }
+      }
+      var kural = "பிறவிப் பெருங்கடல் நீந்துவர் நீந்தார் இறைவன் அடிசேரா தார்"
+      kural = kural.split(' ')
+      var kurals = [];
+      var correctOrder = []
+      for(var i=0;i<kural.length;i++) {
+        kurals.push({index:i, word:kural[i]})
+        correctOrder.push(kural[i]);
+      }
+      shuffleArray(kurals);
+      var words = $('.word');
+      var targets = $('.text-line');
+      $.each(words, function (i) {
+        $(targets[i]).attr('id', 'snap-'+ i);
+        $(targets[i]).addClass('snap-class-'+ i);
+
+        $(words[i]).draggable({
+          snap:".snap-class-" + currentTarget ,
+          snapMode:"inner",
+          revert: (function(e) {
+            var wordPosition = $(this.word).attr('data-position')
+            wordPosition = parseInt(wordPosition);
+
+            if(isOverlap($(this.word), $("#snap-" + currentTarget))) {
+              if(wordPosition != currentTarget) {
+                return true;
+              }
+              return false;
+            }
+            return true;
+          }).bind({word: words[i]}),
+          stop: function(event, ui) {
+            var wordPosition = $(event.target).attr('data-position')
+            wordPosition = parseInt(wordPosition)
+            if(isOverlap($(event.target), $("#snap-" + currentTarget))) {
+              if(wordPosition == currentTarget) {
+                currentTarget++;
+                var snap = $("#snap-" + currentTarget)[0].getBoundingClientRect();
+                var w = $(event.target)[0].getBoundingClientRect();
+                var x;
+                if(w.left > snap.left) {
+                  x = w.left-snap.left;
+                } else x = snap.left - w.left
+                debugger;
+                //TweenLite.to(event.target, 0.1, {x: x });
+
+                // debugger;
+                //"#snap-" + currentTarget
+                //TweenLite.to(event.target,0.1, p);
+                performRound(currentTarget);
+
+                // $("#snap-" + currentTarget).addClass("verticalAlign")
+
+              }
+            }
+
+
+          }
+        });
+        $(words[i]).text(kurals[i].word)
+        $(words[i]).attr('data-position', kurals[i].index)
+      });
+
+      function performRound(round) {
+        var target = $('#snap-'+ round)
+        target.addClass('green')
+
+
+        if(round > 0 ) {
+          var prevRound = round - 1;
+          var words = $('.word')
+          $.each(words, function(i) {
+            var wordPosition = $(words[i]).attr('data-position');
+            wordPosition = parseInt(wordPosition);
+            if(wordPosition == prevRound) {
+              $(words[i]).draggable("disable");
+            } else if(wordPosition == round) {
+              $(words[i]).draggable("option", "snap", ".snap-class-" + round);
+            }
+
+          });
+        }
+
+      }
+      performRound(currentTarget);
+    </script>
+  </body>
+</html>
